@@ -11,16 +11,20 @@ def open_file( file_name, mode ):
         print( "Failed to open file: {0}".format( file_name ) )
     return f
 
-def main( file_name ):
-    file_name_no_extension = file_name.rsplit( '.', 1 )[0]
+def main( argv ):
     words_dict = { }
     freq_dict = { }
     word_count = 0
 
+    if len( argv ) < 2:
+        file_name = input( "Enter a file name: " )
+    else:
+        file_name = argv
+
     # Open input file and check for error
     fin = open_file( file_name, 'r' )
     if fin == None:
-        sys.exit( 1 )
+        return False
 
     output_file_name = file_name.rsplit( '.', 1 )[0] + '.wrd'
 
@@ -28,7 +32,7 @@ def main( file_name ):
     fout = open_file( output_file_name, 'w' )
     if fout == None:
         fin.close( )
-        sys.exit( 1 )
+        return False
 
     for line in fin:
         line_words = line.split( )
@@ -66,11 +70,9 @@ def main( file_name ):
 
     fin.close( )
     fout.close( )
+    return True
 
 
 if __name__ == '__main__':
-    if len( sys.argv ) != 2:
-        file_name = input( 'Enter a file to parse: ' )
-        main( file_name )
-    else:
-        main( sys.argv[1] )
+    if not main( sys.argv ):
+        sys.exit( 1 )
