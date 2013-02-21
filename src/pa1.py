@@ -1,4 +1,78 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
+###############################################################################
+# Programming Assignment #1 - Zipf’s Law in Python
+#
+# Author:     Matt Richard
+# Date:       Wed Feb 20, 2013
+# Professor:  Dr. John Weiss
+# Course:     CSC 461
+# Locations:  McLaury 313
+#
+# Description: 
+#
+# Zipf's Law is a curious observation about the statistical distribution of
+# words in text: the frequency of any word is inversely proportional to its
+# rank in the frequency table. Word frequency is the number of times a given
+# word appears in the text. When words are ranked according to frequency, the
+# most frequent word is given rank 1, the next-most-frequent word is given rank
+# 2, etc. Ties are handled by assigning the middle value in a range of ranks.
+# For example, in a two-way tie for most frequent word, each word is given the
+# rank of 1.5.
+#
+# Write a Python program to investigate the validity of Zipf’s Law. Read in
+# words from a text file, counting their frequency of occurrence. Print out the
+# words sorted by frequency (highest frequency first). Within each frequency
+# group, sort the words alphabetically. Then print a table that lists word rank
+# and frequency, and plot log(rank) vs. log(frequency). If Zipf’s Law holds for
+# that particular text file, you should get a straight line with slope of -1.
+#
+# Implementation Details
+# Read the input words from a text file, whose filename may be given as a
+# command-line argument. If no filename is supplied on the command line, prompt
+# the user to enter the filename. Print an error message if the usage is
+# incorrect or the text file cannot be opened.
+#
+# The input text file consists of a stream of ASCII characters that you must
+# parse into words. For this assignment, restrict words to strings of letters,
+# possibly containing embedded single quotes (contractions). Words are
+# separated from the surrounding text by anything that is not a letter. The
+# word concordance should be case-insensitive, so convert all words to lower
+# case prior to insertion in the frequency table. Use regular expressions to
+# help extract words from the text file.
+#
+# Store the words and their frequencies of occurrence in a Python dictionary
+# (aka hash table). As you may recall from your data structures course, hash
+# table performance is O(1) average for find, insert and delete operations.
+# Using a dictionary, you should be able to insert new words and increment word
+# frequencies very efficiently.
+#
+# The output of your program should include the following:
+#
+# 1. Print the word frequencies to a file with the same name as the input file,
+#    but with the extension .wrd. For example, given an input text file
+#    file.txt, write the output to file.wrd. File header info should include
+#    the input filename, total number of words processed, and number of
+#    distinct words found.
+#
+#    Print words in frequency groups, sorted alphabetically within each group.
+#    Do not print empty frequency groups. Print multiple words per line, left
+#    justified within columns. For formatting purposes, you may assume that
+#    words will not exceed 15 characters in length.
+#
+# 2. Print rank and frequency information to a CSV (comma separated value)
+#    file, suitable for importing into an Excel spreadsheet. This file should
+#    have the same name as the input text file, with a .csv extension. Include
+#    the same file header info as in the .wrd file.
+#
+# 3. Print timing results to the console. This will give an indication of how
+#    efficiently your program executes.
+#
+# Usage: $ python3 zipf.py FILENAME
+#
+# Bugs:  None
+###############################################################################
+
 
 import re
 import sys
@@ -14,6 +88,7 @@ def open_file( file_name, mode ):
     handle will be returned; otherwise, None will be returned.
     """
     f = None
+    # Open file file_name in the given mode and catch any errors that occur
     try:
         f = open( file_name, mode )
     except IOError:
@@ -144,6 +219,7 @@ def main( argv ):
                     words_dict[word] = 1
                 word_count += 1
 
+    # Input file is not needed anymore, so close it
     fin.close( )
 
     # Using the words dictionary, create a dictionary based of off the
