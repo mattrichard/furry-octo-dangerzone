@@ -68,7 +68,7 @@
 # 3. Print timing results to the console. This will give an indication of how
 #    efficiently your program executes.
 #
-# Usage: $ python3 zipf.py FILENAME
+# Usage: $ python3 zipf.py [FILENAME]
 #
 # Bugs:  None
 ###############################################################################
@@ -86,6 +86,13 @@ def open_file( file_name, mode ):
     in that mode. If an error occurs while openning the file, a description
     of the error will be printed. If the file was successfully open, the file
     handle will be returned; otherwise, None will be returned.
+
+    Args:
+        file_name: A name of a file to open.
+        mode: The mode to open the file in.
+
+    Returns:
+        True if the file was opened successfully; otherwise, False.
     """
     f = None
     # Open file file_name in the given mode and catch any errors that occur
@@ -110,8 +117,20 @@ def write_file_header_info( f, input_file_name, total_words, distinct_words ):
     errors occur while writing to the output file, an error will be printed
     and the function will return False. Otherwise, if no errors occured, the
     function will return True.
+
+    Args:
+        f: The file handle to write the header to.
+        input_file_name: The name of the input file that was processed.
+        total_words: The totol number of words that was parsed from the input
+            file.
+        distinct_words: The number of distinct words parsed from the input
+            file.
+
+    Returns:
+        True if the header info was written successfully; otherwise, False.
     """
     result = False
+    # Write header info to the file and catch any exceptions that may occur
     try:
         f.write( "Zipf's Law: rank * freq = const\n" )
         f.write( "-------------------------------\n" )
@@ -127,7 +146,25 @@ def write_file_header_info( f, input_file_name, total_words, distinct_words ):
     return result
 
 
-def create_wrd_file( base_file_name, word_count, distinct_words, freq_dict ):
+def create_wrd_file( base_file_name, freq_dict, word_count, distinct_words ):
+    """Writes every word at each frequency to a .wrd file.
+
+    Using the frequency dictionary (freq_dict), every word at each frequency
+    is written to the .wrd file. Words occuring the most frequent will be
+    written first down to the words occuring the least frequent.
+
+    Args:
+        base_file_name: The base file name of the input file. The extension
+            .wrd is appended when openning the output file.
+        freq_dict: A dictionary whose keys are frequencies and values are a
+            list of words.
+        word_count: The total number of words in the frequency dictionary.
+        distinct_words: The total number of distinct words in the frequency
+            dictionary.
+
+    Returns:
+        True if the .wrd file was successfully created; otherwise False.
+    """
     # Open the output file with .wrd extension and check for failure
     fout = open_file( base_file_name + '.wrd', 'w' )
     if fout == None:
@@ -139,24 +176,49 @@ def create_wrd_file( base_file_name, word_count, distinct_words, freq_dict ):
         fout.close( )
         return False
 
+    # Loop through the sorted frequency dictionary, sorted by highest
+    # frequency to lowest frequency.
     for freq in sorted( list( freq_dict.keys( ) ), reverse=True ):
         fout.write( "\n" )
+
+        # Write the current frequency count to the file
         fout.write( "Words occurring {0}:\n".format(
             "once" if freq == 1 else "{0} times".format( freq ) ) )
 
+        # Write out all words that occured with the current frequency
         count = 1
         for word in sorted( freq_dict[freq] ):
             fout.write( '{0:<16}'.format( word ) )
+
             if count % 5 == 0:
                 fout.write( '\n' )
             count += 1
+
         fout.write( "\n" )
 
     fout.close( )
     return True
 
 
-def create_csv_file( base_file_name, word_count, distinct_words, freq_dict ):
+def create_csv_file( base_file_name, freq_dict, word_count, distinct_words ):
+    """Writes every word at each frequency to a .csv file.
+
+    Creates a comma-separated value file from the given frequency dictionary.
+    Using Zipf's Law, the rank will be calculated, and the rank, frequency,
+    and rank*frequency will be written to the file.
+
+    Args:
+        base_file_name: The base file name of the input file. The extension
+            .csv is appended when openning the output file.
+        freq_dict: A dictionary whose keys are frequencies and values are a
+            list of words.
+        word_count: The total number of words in the frequency dictionary.
+        distinct_words: The total number of distinct words in the frequency
+            dictionary.
+
+    Returns:
+        True if the .csv file was successfully created; otherwise False.
+    """
     # Open the output file with .csv extension and check for failure
     fout = open_file( base_file_name + '.csv', 'w' )
     if fout == None:
@@ -187,6 +249,22 @@ def create_csv_file( base_file_name, word_count, distinct_words, freq_dict ):
 
 
 def main( argv ):
+    """Starting point for computing Zipf's Law.
+
+    Using the filename given in argv, or prompting the user if no filename is
+    given, this fuction will read every word from the file counting the number
+    of times each word occurs (i.e., the frequency). From there, the rank of
+    the word(s) at each frequency will be calculated according to Zipf's Law.
+    Finally, two output files will be created. First, a .wrd file listing every
+    word at each frequency. And second, a .csv file containing a rank,
+    frequency, and rank*frequency.
+
+    Args:
+        argv: The argument vector passed into the program.
+
+    Returns:
+        True if no errors occured during execution; otherwise False.
+    """
     words_dict = dict( )
     freq_dict = dict( )
     word_count = 0
@@ -238,11 +316,15 @@ def main( argv ):
     # remove file extension
     base_file_name = base_file_name.rsplit( '.', 1 )[0]
 
-    if not create_wrd_file( base_file_name, word_count, len( words_dict ), freq_dict ):
+    # Create the .wrf file and check if it was successful
+    if not create_wrd_file( base_file_name, freq_dict, word_count,
+        len( words_dict ) ):
         print( "Failed to create wrd file" )
         return False
 
-    if not create_csv_file( base_file_name, word_count, len( words_dict ), freq_dict ):
+    # Create the .csv file and check if it was successful
+    if not create_csv_file( base_file_name, freq_dict, word_count,
+        len( words_dict ) ):
         print( "Failed to create csv file" )
         return False
 
@@ -255,5 +337,6 @@ if __name__ == '__main__':
     if not main( sys.argv ):
         sys.exit( 1 )
 
-    end_time = 1000.0 * ( time.time( ) - start_time )
-    print( "Elapsed time = {0} msec".format( end_time ) )
+    # Calculate the total execution time
+    total_time = 1000.0 * ( time.time( ) - start_time )
+    print( "Elapsed time = {0} msec".format( total_time ) )
